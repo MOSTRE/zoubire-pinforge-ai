@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  gumroadId   String?
+  permalink   String?
+  name        String
+  url         String   @unique
+  description String?  @default("")
+  thumbnailUrl String?
+  priceCents  Int?
+  currency    String?  @default("usd")
+  tags        String?  @default("[]")
+  status      String   @default("active") // active | hidden | removed
+  source      String   @default("catalog") // catalog | csv | manual | api
+  lastSyncedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  analysis ProductAnalysis?
+  pins     Pin[]
+  keywords ProductKeyword[]
+
+  @@index([status])
+  @@index([permalink])
+}
+
+model ProductSource {
+  id        String   @id @default(cuid())
+  kind      String   // catalog_sync | csv | manual | api
+  detail    String?
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ProductKeyword {
+  id        String  @id @default(cuid())
+  productId String
+  keyword   String
+  kind      String  @default("secondary") // primary | secondary | longtail
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductAnalysis {
+  id               String   @id @default(cuid())
+  productId        String   @unique
+  category         String   @default("")
+  targetAudience   String   @default("")
+  buyerIntent      String   @default("")
+  problemSolved    String   @default("")
+  benefit          String   @default("")
+  useCases         String   @default("[]")
+  searchIntent     String   @default("")
+  contentAngles    String   @default("[]")
+  primaryKeywords  String   @default("[]")
+  secondaryKeywords String  @default("[]")
+  longTailKeywords String   @default("[]")
+  relatedTopics    String   @default("[]")
+  suggestedBoards  String   @default("[]")
+  pinConcepts      String   @default("[]")
+  rawJson          String   @default("{}")
+  provider         String   @default("ollama")
+  model            String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Pin {
+  id                String    @id @default(cuid())
+  productId         String
+  title             String
+  description       String    @default("")
+  primaryKeyword    String    @default("")
+  secondaryKeywords String    @default("[]")
+  hashtags          String    @default("[]")
+  cta               String    @default("")
+  destinationUrl    String
+  boardId           String?
+  boardName         String?
+  imagePath         String?
+  imageHash         String?
+  contentFingerprint String?
+  creativeAngle     String    @default("product-focused")
+  template          String    @default("headline-hero")
+  imagePrompt       String    @default("")
+  status            String    @default("draft") // draft | approved | scheduled | publishing | published | failed
+  scheduledAt       DateTime?
+  publishedAt       DateTime?
+  pinterestPinId    String?
+  publishError      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  product           Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  assets            PinAsset[]
+  jobs              PublishJob[]
+
+  @@index([productId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([imageHash])
+  @@index([contentFingerprint])
+}
+
+model PinAsset {
+  id        String   @id @default(cuid())
+  pinId     String
+  kind      String   // base | final | thumbnail
+  path      String
+  width     Int?
+  height    Int?
+  bytes     Int?
+  hash      String?
+  createdAt DateTime @default(now())
+  pin       Pin      @relation(fields: [pinId], references: [id], onDelete: Cascade)
+
+  @@index([pinId])
+}
+
+model PinterestBoard {
+  id          String   @id @default(cuid())
+  pinterestId String?  @unique
+  name        String
+  description String?  @default("")
+  privacy     String?  @default("PUBLIC")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PublishJob {
+  id          String    @id @default(cuid())
+  pinId       String
+  status      String    @default("pending") // pending | running | succeeded | failed | skipped
+  attempts    Int       @default(0)
+  scheduledAt DateTime?
+  runAt       DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  pin         Pin       @relation(fields: [pinId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model Setting {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+model AiGeneration {
+  id        String   @id @default(cuid())
+  kind      String   // analysis | seo | image-prompt
+  productId String?
+  pinId     String?
+  provider  String   @default("ollama")
+  model     String   @default("")
+  input     String   @default("{}")
+  output    String   @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([kind])
+}
+
+model ImageGeneration {
+  id        String   @id @default(cuid())
+  pinId     String?
+  provider  String   @default("local-synthetic")
+  prompt    String   @default("")
+  status    String   @default("pending") // pending | running | succeeded | failed
+  inputPath String?
+  outputPath String?
+  width     Int?
+  height    Int?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model ActivityEvent {
+  id        String   @id @default(cuid())
+  type      String
+  message   String
+  meta      String?  @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}

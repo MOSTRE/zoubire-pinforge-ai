@@ -1,0 +1,62 @@
+# Deploys ONLY the public Privacy Policy static site to GitHub Pages.
+#
+# Source: docs/privacy-policy/index.html
+# The workflow copies that single file into the Pages artifact root, so the
+# policy is served at the site root: https://OWNER.github.io/REPOSITORY/
+#
+# Nothing else from this repository (backend, frontend, .env, databases,
+# images, logs, tokens) is included in the artifact.
+#
+# Required repo settings (Settings -> Pages -> Build and deployment):
+#   Source: "GitHub Actions"
+
+name: Deploy Privacy Policy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/privacy-policy/**"
+      - ".github/workflows/deploy-privacy-policy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-privacy-policy"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Assemble privacy-policy site (public file only)
+        run: |
+          set -euo pipefail
+          rm -rf site
+          mkdir -p site
+          cp docs/privacy-policy/index.html site/index.html
+          echo "--- Pages artifact contents (must be only index.html) ---"
+          find site -type f | sort
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
