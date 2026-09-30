@@ -208,15 +208,15 @@ PinForge AI ships a standalone static policy page for that purpose.
   into the Pages artifact root — backend, frontend, `.env`, databases, images,
   logs, and tokens are never included. The policy is therefore served at the
   **site root**.
-- **Expected public URL:** this working copy is **not a git repository** (no
-  remote configured), so the final URL cannot be derived yet. After pushing to
-  GitHub as `OWNER/REPOSITORY` with Pages source set to **GitHub Actions**, the URL is:
+- **Public URL (verified live):** the policy is deployed at the site root:
 
-  `https://OWNER.github.io/REPOSITORY/`
+  `https://mostre.github.io/pinforge-ai/`
 
-- **Before submitting to Pinterest:** replace the `YOUR_REAL_EMAIL@example.com`
-  placeholder in `docs/privacy-policy/index.html` with a real contact email
-  (it is marked with an `IMPORTANT` HTML comment and an on-page badge).
+  (HTTP 200 verified 2026-09-30: policy title, all 15 sections, operator name,
+  and contact email present). GitHub repo: `https://github.com/MOSTRE/pinforge-ai`
+  with Pages source **GitHub Actions** (`build_type: workflow`).
+- **Contact email:** `abbadzoubire@gmail.com` is set in the policy. If it ever
+  changes, update `docs/privacy-policy/index.html` and push to `main` to redeploy.
 - **Test locally:** open `docs/privacy-policy/index.html` directly in a browser,
   or serve the folder with any static server, e.g.
   `npx serve docs/privacy-policy` then visit the printed URL.
