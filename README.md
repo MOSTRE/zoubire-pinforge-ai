@@ -210,10 +210,10 @@ PinForge AI ships a standalone static policy page for that purpose.
   **site root**.
 - **Public URL (verified live):** the policy is deployed at the site root:
 
-  `https://mostre.github.io/pinforge-ai/`
+  `https://mostre.github.io/zoubire-pinforge-ai/`
 
   (HTTP 200 verified 2026-09-30: policy title, all 15 sections, operator name,
-  and contact email present). GitHub repo: `https://github.com/MOSTRE/pinforge-ai`
+  and contact email present). GitHub repo: `https://github.com/MOSTRE/zoubire-pinforge-ai`
   with Pages source **GitHub Actions** (`build_type: workflow`).
 - **Contact email:** `abbadzoubire@gmail.com` is set in the policy. If it ever
   changes, update `docs/privacy-policy/index.html` and push to `main` to redeploy.
